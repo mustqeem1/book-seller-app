@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Buy Books</title>
+    <link rel="stylesheet" href="css/buy.css">  <!-- Fixed: Use forward slash / -->
+    <style>
+        /* Your existing modal styles – unchanged */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(0,0,0,0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 16px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        /* Modal container */
+        .modal {
+            background: #ffffff;
+            border-radius: 16px;
+            max-width: 400px;
+            width: 100%;
+            padding: 24px 32px;
+            box-shadow: 0 12px 24px rgba(0,0,0,0.25);
+            position: relative;
+        }
+
+        /* Modal header */
+        .modal h2 {
+            margin-bottom: 24px;
+            font-size: 1.75rem;
+            color: #10b981;
+        }
+
+        /* Close button */
+        .modal-close {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            border: none;
+            background: transparent;
+            font-size: 24px;
+            font-weight: 700;
+            cursor: pointer;
+            color: #374151;
+            transition: color 0.3s ease;
+        }
+
+        .modal-close:hover,
+        .modal-close:focus {
+            color: #10b981;
+            outline: none;
+        }
+
+        /* Form styles */
+        .modal form {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .modal label {
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 8px;
+            user-select: none;
+        }
+
+        .modal input {
+            padding: 10px 14px;
+            border: 1.5px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+        .modal input:focus {
+            border-color: #10b981;
+            outline: none;
+            box-shadow: 0 0 6px rgba(16, 185, 129, 0.5);
+        }
+
+        .modal .submit-btn {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            font-weight: 700;
+            font-size: 1rem;
+            border: none;
+            border-radius: 12px;
+            padding: 14px 0;
+            cursor: pointer;
+            transition: background 0.3s ease, transform 0.15s ease;
+        }
+        .modal .submit-btn:hover,
+        .modal .submit-btn:focus {
+            background: linear-gradient(135deg, #059669, #047857);
+            transform: scale(1.05);
+            outline: none;
+        }
+        .modal .submit-btn:active {
+            transform: scale(0.97);
+        }
+
+        /* Success message */
+        .modal .success-message {
+            color: #059669;
+            font-weight: 600;
+            text-align: center;
+            margin-top: 8px;
+            display: none;
+        }
+
+        /* NEW: Style for seller phone in modal */
+        #selectedBookInfo {
+            background: #f0f9f4;
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 4px solid #10b981;
+            margin-bottom: 16px;
+        }
+        #selectedBookInfo strong {
+            color: #10b981;
+        }
+        .seller-phone {
+            font-size: 0.95rem;
+            color: #059669;
+            font-weight: 600;
+            margin-top: 8px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Buy Books</h1>
+    </header>
+    
+    <main>
+        <h2>Available Books</h2>  <!-- Added back for structure -->
+        <div class="book-list">
+            <!-- Books will load here dynamically -->
+        </div>
+    </main>
+
+    <!-- Modal for Buy form -->
+    <div class="modal-overlay" id="buyModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <div class="modal" role="document">
+            <button class="modal-close" aria-label="Close modal">&times;</button>
+            <h2 id="modalTitle">Buy Book</h2>
+            <div id="selectedBookInfo"></div>  <!-- Changed to div for better styling -->
+            <form id="buyForm" novalidate>
+                <label for="buyerName">Your Name</label>
+                <input type="text" id="buyerName" name="buyerName" placeholder="Enter your name" required autocomplete="name" />
+
+                <label for="buyerEmail">Email</label>
+                <input type="email" id="buyerEmail" name="buyerEmail" placeholder="Enter your email" required autocomplete="email" />
+
+                <label for="buyerPhone">Phone Number</label>
+                <input type="tel" id="buyerPhone" name="buyerPhone" placeholder="+1234567890" pattern="^\+?[0-9\s\-]{7,15}$" 
+                title="Phone number should be 7 to 15 digits, can include +, spaces or dashes" required autocomplete="tel" />
+                
+                <button type="submit" class="submit-btn">Confirm Purchase</button>
+                <div class="success-message" id="purchaseSuccess">Thank you for your purchase! We will contact you shortly.</div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let allBooks = [];  // To store fetched books from DB
+        let currentBook = null;
+
+        // Function to fetch books from backend and show them
+        async function loadBooks() {
+            try {
+                const response = await fetch('http://localhost:3000/api/books');
+                if (!response.ok) throw new Error('No books yet');
+                allBooks = await response.json();
+
+                const bookList = document.querySelector('.book-list');
+                bookList.innerHTML = '';  // Clear any old content
+
+                if (allBooks.length === 0) {
+                    bookList.innerHTML = '<p style="text-align: center; color: #666;">No books available yet. Ask sellers to add some!</p>';
+                    return;
+                }
+
+                allBooks.forEach(book => {
+                    const bookItem = document.createElement('div');
+                    bookItem.className = 'book-item';
+                    bookItem.setAttribute('data-id', book._id);  // Unique ID from DB
+                    bookItem.setAttribute('data-title', book.title);
+                    bookItem.setAttribute('data-author', book.author);
+                    bookItem.setAttribute('data-price', book.price);
+                    bookItem.setAttribute('data-phone', book.phone);  // NEW: Store seller phone
+                    bookItem.innerHTML = `
+                        <h3>${book.title}</h3>
+                        <p>Author: ${book.author}</p>
+                        <p>Price: ₹${book.price}</p>  <!-- RS as requested -->
+                        <p>Seller Phone: ${book.phone}</p>
+                        <button class="buy-button">Buy Now</button>
+                    `;
+                    bookList.appendChild(bookItem);
+                });
+
+                // Re-attach event listeners to the new buy buttons
+                attachBuyButtons();
+            } catch (error) {
+                console.log('Error loading books:', error);
+                document.querySelector('.book-list').innerHTML = '<p style="text-align: center; color: #e74c3c;">Error loading books. Is the server running? Check console (F12).</p>';
+            }
+        }
+
+        // Function to attach "Buy Now" button listeners (for modals)
+        function attachBuyButtons() {
+            const buyButtons = document.querySelectorAll('.buy-button');
+            const modalOverlay = document.getElementById('buyModal');
+            const selectedBookInfo = document.getElementById('selectedBookInfo');
+            const purchaseSuccess = document.getElementById('purchaseSuccess');
+            const buyForm = document.getElementById('buyForm');
+
+            buyButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const bookItem = button.closest('.book-item');
+                    const id = bookItem.getAttribute('data-id');
+                    const title = bookItem.getAttribute('data-title');
+                    const author = bookItem.getAttribute('data-author');
+                    const price = bookItem.getAttribute('data-price');
+                    const phone = bookItem.getAttribute('data-phone');  // NEW: Get seller phone
+                    currentBook = { id, title, author, price, phone };  // NEW: Include phone
+
+                    // NEW: Display book info + seller phone in modal
+                    selectedBookInfo.innerHTML = `
+                        <strong>Buying: "${title}" by ${author} for ₹${price}</strong><br>
+                        <span class="seller-phone">Contact Seller: ${phone}</span>
+                    `;
+                    purchaseSuccess.style.display = 'none';
+                    buyForm.style.display = 'flex';
+                    buyForm.reset();
+
+                    modalOverlay.classList.add('active');
+                    modalOverlay.setAttribute('aria-hidden', 'false');
+
+                    // Focus on name input for accessibility
+                    document.getElementById('buyerName').focus();
+
+                    // Prevent scrolling body when modal open
+                    document.body.style.overflow = 'hidden';
+                });
+            });
+
+            // Close modal function (keeps your original logic)
+            const closeModal = () => {
+                modalOverlay.classList.remove('active');
+                modalOverlay.setAttribute('aria-hidden', 'true');
+                purchaseSuccess.style.display = 'none';
+                buyForm.style.display = 'flex';
+                buyForm.reset();
+                currentBook = null;
+                document.body.style.overflow = '';
+            };
+
+            // Close on X button
+            modalOverlay.querySelector('.modal-close').addEventListener('click', closeModal);
+
+            // Close on outside click
+            modalOverlay.addEventListener('click', (e) => {
+                if (e.target === modalOverlay) closeModal();
+            });
+
+            // Close on ESC key
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && modalOverlay.classList.contains('active')) {
+                    closeModal();
+                }
+            });
+        }
+
+        // Handle form submission - now sends to backend + Google Sheets
+        document.getElementById('buyForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const name = document.getElementById('buyerName').value.trim();
+            const email = document.getElementById('buyerEmail').value.trim();
+            const phone = document.getElementById('buyerPhone').value.trim();
+
+            // Client-side validation (same as original)
+            const phonePattern = /^\+?[0-9\s\-]{7,15}$/;
+            if (!name || !email || !phone || !phonePattern.test(phone)) {
+                alert('Please fill all fields correctly, especially a valid phone number.');
+                return;
+            }
+
+            try {
+                // Step 1: Send to backend (your MongoDB)
+                const response = await fetch('http://localhost:3000/api/purchases', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: new URLSearchParams({
+                        bookId: currentBook.id,
+                        bookTitle: currentBook.title,
+                        bookAuthor: currentBook.author,
+                        bookPrice: currentBook.price,
+                        buyerName: name,
+                        buyerEmail: email,
+                        buyerPhone: phone
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Step 2: NEW - Send to Google Sheets (after backend success)
+                    await saveToGoogleSheets(name, email, phone, currentBook.title, currentBook.phone);
+
+                    // Show success message from server
+                    purchaseSuccess.textContent = data.message;
+                    purchaseSuccess.style.display = 'block';
+                    buyForm.style.display = 'none';
+
+                    // Auto-close after delay with alert
+                    setTimeout(() => {
+                        alert(`Thank you, ${name}, for purchasing "${currentBook.title}". We will contact you soon.`);
+                        closeModal();  // Use the function above
+                    }, 3000);
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            } catch (error) {
+                alert('Connection problem. Is the server running?');
+                console.log('Submit error:', error);
+            }
+        });
+
+        // NEW: Function to save data to Google Sheets
+        async function saveToGoogleSheets(buyerName, buyerEmail, buyerPhone, bookTitle, sellerPhone) {
+            // Replace with your Google Apps Script Web App URL (from Step 3 below)
+            const sheetsUrl = 'https://script.google.com/macros/s/AKfycbx0M3cqGLskS6gqPowBVvI4LNLprBWMG1fuAoyD9Me5dXn1uWcF_r-6HSPzH2mj3CY8/exec';  // Get this from setup
+
+            const formData = new URLSearchParams({
+                timestamp: new Date().toLocaleString(),
+                bookTitle: bookTitle,
+                sellerPhone: sellerPhone,
+                buyerName: buyerName,
+                buyerEmail: buyerEmail,
+                buyerPhone: buyerPhone
+            });
+
+            try {
+                const response = await fetch(sheetsUrl, {
+                    method: 'POST',
+                    body: formData
+                });
+                if (!response.ok) {
+                    console.log('Sheets save failed, but backend worked.');
+                }
+            } catch (error) {
+                console.log('Sheets error:', error);  // Non-blocking – backend still saves
+            }
+        }
+
+        // Load books when page opens
+        loadBooks();
+    </script>
+	
+    <footer style="text-align: center; padding: 10px; background-color: black; margin-top: 20px;">
+        &copy; 2025 MOHD MUSTQEEM SIDDIQI. All rights reserved.
+    </footer>	
+</body>
+</html>

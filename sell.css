@@ -1,0 +1,80 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f5f7fa;
+    margin: 0;
+    padding: 0;
+}
+
+header {
+    background-color: #008f68;
+    padding: 20px;
+    color: white;
+    text-align: center;
+}
+
+main {
+    padding: 40px 20px;
+    max-width: 600px;
+    margin: 0 auto;
+    background: white;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    border-radius: 8px;
+    margin-top: 40px;
+}
+
+h1, h2 {
+    margin-bottom: 20px;
+    font-weight: 700;
+    color: #004d3a;
+    text-align: center;
+}
+
+label {
+    margin-bottom: 6px;
+    font-weight: 600;
+    color: #004d3a;
+}
+
+input[type="text"],
+input[type="number"],
+input[type="tel"] {
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 1.5px solid #008f68;
+    border-radius: 6px;
+    font-size: 1rem;
+}
+
+button {
+    background-color: #008f68;
+    color: white;
+    font-size: 1.1rem;
+    padding: 14px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #005836;
+}
+
+.message {
+    margin-top: 20px;
+    padding: 15px;
+    border-radius: 6px;
+    font-weight: 600;
+    color: #004d3a;
+    background-color: #dff0d8;
+    border: 1.5px solid #4cae4c;
+    display: none;
+    text-align: center;
+}
+
+footer {
+    text-align: center;
+    padding: 15px;
+    background-color: #008f68;
+    color: white;
+    margin-top: 40px;
+}

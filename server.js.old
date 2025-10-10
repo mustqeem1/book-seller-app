@@ -1,0 +1,76 @@
+// This loads your secret database link from .env
+require('dotenv').config();
+
+const express = require('express');  // Tool to make a web server
+const mongoose = require('mongoose');  // Tool to talk to database
+const bodyParser = require('body-parser');  // Tool to read form data
+const cors = require('cors');  // Tool to let browser talk to server
+
+const app = express();  // Start the server
+const PORT = 3000;  // Server runs on this "door" number
+
+// Add helpers to the server
+app.use(cors());  // Lets your HTML page send data
+app.use(bodyParser.urlencoded({ extended: true }));  // Reads form info
+app.use(bodyParser.json());  // In case we use JSON later
+
+// Connect to database
+mongoose.connect(process.env.MONGODB_URI)
+  .then(() => console.log('Connected to database! Yay!'))
+  .catch(err => console.log('Database problem:', err));
+
+// What a "book" looks like in the database (like a template)
+const bookSchema = new mongoose.Schema({
+  title: { type: String, required: true },  // Must have title
+  author: { type: String, required: true },  // Must have author
+  price: { type: Number, required: true, min: 0.01 },  // Price > 0
+  phone: { type: String, required: true },  // Phone number
+  createdAt: { type: Date, default: Date.now }  // When it was added
+});
+
+const Book = mongoose.model('Book', bookSchema);  // Ready to save books
+
+// This is the "job" that happens when form is submitted
+app.post('/api/books', async (req, res) => {
+  try {
+    // Get data from form
+    let title = req.body.title;
+    let author = req.body.author;
+    let price = req.body.price;
+    let phone = req.body.phone;
+
+    // Check if everything is filled
+    if (!title || !author || !price || !phone) {
+      return res.status(400).json({ error: 'Fill all boxes!' });
+    }
+    if (parseFloat(price) <= 0) {
+      return res.status(400).json({ error: 'Price must be more than 0!' });
+    }
+    // Check phone (same rule as your HTML)
+    let phoneCheck = /^\+?[0-9\s\-]{7,15}$/;
+    if (!phoneCheck.test(phone)) {
+      return res.status(400).json({ error: 'Bad phone number!' });
+    }
+
+    // Clean up data (remove extra spaces)
+    title = title.trim();
+    author = author.trim();
+    phone = phone.trim();
+    price = parseFloat(price);
+
+    // Save to database
+    let newBook = new Book({ title, author, price, phone });
+    await newBook.save();
+
+    // Send back "Success!"
+    res.status(201).json({ message: 'Book saved! Thanks!' });
+  } catch (error) {
+    console.log('Save error:', error);
+    res.status(500).json({ error: 'Something went wrong. Try again.' });
+  }
+});
+
+// Start the server
+app.listen(PORT, () => {
+  console.log(`Server is on! Go to http://localhost:${PORT}`);
+});

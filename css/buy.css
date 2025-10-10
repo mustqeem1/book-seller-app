@@ -1,0 +1,131 @@
+/* Reset and base */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background: #f9fafb;
+    color: #111827;
+    line-height: 1.6;
+    min-height: 100vh;
+    padding: 24px 16px;
+}
+
+/* Header */
+header {
+    margin-bottom: 32px;
+    text-align: center;
+}
+
+header h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #10b981; /* Emerald green */
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+/* Main Section */
+main {
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+main h2 {
+    font-size: 2rem;
+    margin-bottom: 24px;
+    font-weight: 600;
+    color: #374151; /* Gray-700 */
+    text-align: center;
+}
+
+/* Book List grid */
+.book-list {
+    display: grid;
+    gap: 24px;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+/* Individual Book Item Card */
+.book-item {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 24px 20px;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: box-shadow 0.3s ease;
+    cursor: default;
+}
+
+.book-item:hover {
+    box-shadow: 0 8px 24px rgba(16, 185, 129, 0.3);
+}
+
+/* Book Info */
+.book-item h3 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: #065f46; /* Darker emerald */
+}
+
+.book-item p {
+    font-size: 1rem;
+    color: #4b5563; /* Gray-600 */
+    margin-bottom: 12px;
+}
+
+/* Buy Button */
+.buy-button {
+    background: linear-gradient(135deg, #10b981, #059669);
+    border: none;
+    color: white;
+    padding: 14px 0;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 1rem;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: background 0.3s ease, transform 0.15s ease;
+    user-select: none;
+}
+
+.buy-button:hover,
+.buy-button:focus {
+    background: linear-gradient(135deg, #059669, #047857);
+    outline: none;
+    transform: scale(1.03);
+}
+
+.buy-button:active {
+    transform: scale(0.97);
+}
+
+/* Footer */
+footer {
+    margin-top: 64px;
+    text-align: center;
+    color: #6b7280; /* Gray-500 */
+    font-size: 0.9rem;
+}
+
+/* Responsive tweaks */
+@media (max-width: 360px) {
+    body {
+        padding: 16px 12px;
+    }
+}
+
+.book-item p {
+    margin: 4px 0;
+    color: #374151;
+}
+.book-item p strong {  /* Make "Seller Phone:" bold */
+    color: #10b981;
+}

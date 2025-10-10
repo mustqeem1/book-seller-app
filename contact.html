@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Contact Us - Old Books Marketplace</title>
+    <link rel="stylesheet" href="css/contact.css" />  <!-- We'll create this in Step 3 -->
+</head>
+<body>
+    <header>
+        <h1>Contact Us</h1>
+    </header>
+    
+    <main>
+        <section class="form-section">
+            <h2>Get in Touch</h2>
+            <p>If you have any questions, comments, or concerns, please feel free to reach out to us using the form below or through our contact information.</p>
+            
+            <form id="contactForm">
+                <label for="name">Name:</label>
+                <input type="text" id="name" name="name" placeholder="Enter your name" required />
+
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" placeholder="Enter your email" required />
+
+                <label for="message">Message:</label>
+                <textarea id="message" name="message" rows="5" placeholder="Your message here..." required></textarea>
+
+                <button type="submit">Send Message</button>
+                <div class="success-message" id="successMessage" style="display: none;">
+                    Thank you! Your message has been sent. We'll get back to you soon.
+                </div>
+            </form>
+        </section>
+        
+        <section class="contact-info">
+            <h2>Contact Information</h2>
+            <p>Email: <a href="mailto:mustqeemsiddiqi786@gmail.com">mustqeemsiddiqi786@gmail.com</a></p>
+            <p>Phone: <a href="tel:+915852359312">+91 58523 59312</a></p>
+            <p>Address: Village Barha Post Khajurahra, Hardoi 241001</p>
+        </section>
+        
+        <section class="map-section">
+            <h2>Find Us Here</h2>
+            <div class="mapouter">
+                <div class="gmap_canvas">
+                    <iframe class="gmap_iframe" width="100%" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" 
+                    src="https://maps.google.com/maps?q=27.3317062,80.1346987&hl=en&z=15&t=&ie=UTF8&iwloc=B&output=embed"></iframe>
+                </div>
+                <style>
+                    .mapouter { position: relative; text-align: right; width: 100%; height: 400px; }
+                    .gmap_canvas { overflow: hidden; background: none !important; width: 100%; height: 400px; }
+                    .gmap_iframe { height: 400px !important; }
+                </style>
+            </div>
+        </section>
+    </main>
+    
+    <footer style="text-align: center; padding: 10px; background-color: black; margin-top: 20px;">
+        &copy; 2025 MOHD MUSTQEEM SIDDIQI. All rights reserved.
+    </footer>
+
+<script>
+    const contactForm = document.getElementById('contactForm');
+    const successMessage = document.getElementById('successMessage');
+
+    contactForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const name = document.getElementById('name').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const message = document.getElementById('message').value.trim();
+
+        // Client-side validation
+        if (!name || !email || !message) {
+            alert('Please fill all fields.');
+            return;
+        }
+        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailPattern.test(email)) {
+            alert('Please enter a valid email.');
+            return;
+        }
+
+        try {
+            // Step 1: Send to backend (MongoDB)
+            const response = await fetch('http://localhost:3000/api/contact', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams({
+                    name: name,
+                    email: email,
+                    message: message
+                })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                // Step 2: NEW - Save to Google Sheets (after backend success)
+                await saveToGoogleSheets(name, email, message);
+
+                // Show success
+                successMessage.style.display = 'block';
+                contactForm.reset();
+                alert(data.message || 'Message sent successfully!');
+            } else {
+                alert('Error: ' + data.error);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Connection problem. Is the server running?');
+        }
+    });
+
+    // NEW: Function to save to Google Sheets
+    async function saveToGoogleSheets(name, email, message) {
+        // Replace with your Web App URL from Step 1
+        const sheetsUrl = 'https://script.google.com/macros/s/AKfycby8Qe_KweJTvynpW3Ugz1kRp8uPns5Q9E5Cr1MCrrz4R09QaMgDBY0WycwwApS3MVDNPw/exec';  // Paste full URL here
+
+        const formData = new URLSearchParams({
+            timestamp: new Date().toLocaleString('en-IN'),  // Indian date/time
+            name: name,
+            email: email,
+            message: message,
+            type: 'Contact'  // Labels it
+        });
+
+        try {
+            const response = await fetch(sheetsUrl, {
+                method: 'POST',
+                body: formData
+            });
+            if (response.ok) {
+                console.log('Saved to Sheets!');
+            } else {
+                console.log('Sheets failed (but DB saved OK).');
+            }
+        } catch (error) {
+            console.log('Sheets error (non-blocking):', error);  // Doesn't break form
+        }
+    }
+</script>
+
+</body>
+</html>
