@@ -1,96 +1,30 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Sell Your Book</title>
-    <link rel="stylesheet" href="sell.css">
+<meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title> Old Books Marketplace </title>
+<link rel="stylesheet" href="css\home.css">
+<link rel="" href="">
+
 </head>
+
+
 <body>
-    <header>
-        <h1>Sell Your Book</h1>
-    </header>
-    
-    <main>
-        <h2>Enter Book Details</h2>
-        <form id="sellBookForm" novalidate>
-            <label for="title">Book Title</label>
-            <input type="text" id="title" name="title" placeholder="Enter book title" required /> </br>
+<h1> Old Books Marketplace </h1>
+<ul>
+<li><a href="index.html"> Home </a> </li>
+<li><a href="sell.html" target="_blank"> Sell Books </a> </li>
+<li><a href="buy.html" target="_blank"> Buy Books </a> </li>
+<li><a href="about.html" target="_blank"> About Us </a> </li>
+<li><a href="contact.html" target="_blank"> Contact Us </a> </li>
+</ul>
 
-            <label for="author">Author</label>
-            <input type="text" id="author" name="author" placeholder="Enter author name" required /> </br>
-
-            <label for="price">Price (USD)</label> 
-            <input type="number" id="price" name="price" min="1" step="0.01" placeholder="Enter price" required /> </br>
-
-            <label for="phone">Phone Number</label>
-            <input 
-                type="tel" 
-                id="phone" 
-                name="phone" 
-                placeholder="Enter phone number" 
-                pattern="^\+?[0-9\s\-]{7,15}$" 
-                title="Phone number should be 7 to 15 digits, can include +, spaces or dashes" 
-                required 
-            /> </br>
-
-            <button type="submit">Submit</button>
-            <div class="message" id="successMessage" style="display:none;">Thank you! Your book has been listed for sale.</div>
-        </form>
-    </main>
+<h1> Rediscover the Magic of Old Books</h1>
+<a href="buy.html" target="_blank">Browse Our Collection </a>
 
 
-
-   <script>
-    const form = document.getElementById('sellBookForm');
-    const successMessage = document.getElementById('successMessage');
-
-    form.addEventListener('submit', async function(e) {
-        e.preventDefault();  // Stop normal form send
-
-        // Get what user typed
-        const title = form.title.value.trim();
-        const author = form.author.value.trim();
-        const price = form.price.value;
-        const phone = form.phone.value.trim();
-
-        // Quick check (for better user experience)
-        const phonePattern = /^\+?[0-9\s\-]{7,15}$/;
-        if (!title || !author || !price || !phone || parseFloat(price) <= 0 || !phonePattern.test(phone)) {
-            alert("Fill everything right! Check phone.");
-            return;
-        }
-
-        try {
-            // Send data to your server (like mailing a letter)
-            const response = await fetch('http://localhost:3000/api/books', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: new URLSearchParams({ title, author, price, phone })
-            });
-
-            const data = await response.json();
-
-            if (response.ok) {  // If server says OK
-                alert('Book listed! Thanks!');
-                successMessage.textContent = data.message;
-                successMessage.style.display = 'block';
-                form.reset();  // Clear form
-                setTimeout(() => successMessage.style.display = 'none', 4000);
-            } else {
-                alert('Error: ' + data.error);
-            }
-        } catch (error) {
-            alert('Connection problem. Is server running?');
-            console.log(error);
-        }
-    });
-</script>
-	
-	
 <footer style="text-align: center; padding: 10px; background-color: black; margin-top: 20px;">
            &copy; 2025 MOHD MUSTQEEM SIDDIQI. All rights reserved.
-       </footer>	
+       </footer>
 </body>
-</html>
-
