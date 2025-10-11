@@ -4,22 +4,22 @@ const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-// const nodemailer = require('nodemailer');  // Uncomment for emails (Step 4)
+// const nodemailer = require('nodemailer');  // Uncomment for emails later
 
 const app = express();
 const PORT = 3000;
 
-// Middlewares (required for forms/API)
-app.use(cors());  // Allows browser to connect
-app.use(bodyParser.urlencoded({ extended: true }));  // Parses form data
-app.use(bodyParser.json());  // For JSON
+// Middlewares
+app.use(cors());
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log('Connected to database! Yay!'))
   .catch(err => console.log('Database problem:', err));
 
-// Book model (for sell)
+// Book model
 const bookSchema = new mongoose.Schema({
   title: { type: String, required: true },
   author: { type: String, required: true },
@@ -29,7 +29,7 @@ const bookSchema = new mongoose.Schema({
 });
 const Book = mongoose.model('Book', bookSchema);
 
-// Purchase model (for buy)
+// Purchase model
 const purchaseSchema = new mongoose.Schema({
   bookId: { type: mongoose.Schema.Types.ObjectId, ref: 'Book', required: true },
   bookTitle: { type: String, required: true },
@@ -42,7 +42,7 @@ const purchaseSchema = new mongoose.Schema({
 });
 const Purchase = mongoose.model('Purchase', purchaseSchema);
 
-// NEW: Contact model (for form)
+// Contact model
 const contactSchema = new mongoose.Schema({
   name: { type: String, required: true, trim: true },
   email: { type: String, required: true, trim: true },
@@ -51,61 +51,60 @@ const contactSchema = new mongoose.Schema({
 });
 const Contact = mongoose.model('Contact', contactSchema);
 
-// NEW: Root route (fixes "Cannot GET /")
+// Root route (fixes "Cannot GET /")
 app.get('/', (req, res) => {
   res.send(`
     <h1>Old Books Marketplace Server is Running!</h1>
-    <p><a href="/api/books">View Books (JSON)</a> | <a href="/api/contact">View Contacts (JSON)</a></p>
-    <p>Use sell.html or buy.html for forms.</p>
+    <p><a href="/api/books">View Books</a> | <a href="/api/contact">View Contacts</a></p>
+    <p>Use sell.html, buy.html, or contact.html for forms.</p>
   `);
 });
 
-// Existing: POST /api/books (sell form)
+// POST /api/books (sell)
 app.post('/api/books', async (req, res) => {
   try {
-    let title = req.body.title;
-    let author = req.body.author;
-    let price = req.body.price;
-    let phone = req.body.phone;
+    const { title, author, price, phone } = req.body;
 
     if (!title || !author || !price || !phone) {
-      return res.status(400).json({ error: 'Fill all boxes!' });
+      return res.status(400).json({ error: 'All fields required!' });
     }
     if (parseFloat(price) <= 0) {
-      return res.status(400).json({ error: 'Price must be more than 0!' });
+      return res.status(400).json({ error: 'Price > 0!' });
     }
-    let phoneCheck = /^\+?[0-9\s\-]{7,15}$/;
-    if (!phoneCheck.test(phone)) {
-      return res.status(400).json({ error: 'Bad phone number!' });
+    const phonePattern = /^\+?[0-9\s\-]{7,15}$/;
+    if (!phonePattern.test(phone)) {
+      return res.status(400).json({ error: 'Invalid phone!' });
     }
 
-    title = title.trim();
-    author = author.trim();
-    phone = phone.trim();
-    price = parseFloat(price);
+    const cleanData = {
+      title: title.trim(),
+      author: author.trim(),
+      price: parseFloat(price),
+      phone: phone.trim()
+    };
 
-    let newBook = new Book({ title, author, price, phone });
+    const newBook = new Book(cleanData);
     await newBook.save();
 
-    res.status(201).json({ message: 'Book saved! Thanks!' });
+    res.status(201).json({ message: 'Book saved!' });
   } catch (error) {
-    console.log('Save error:', error);
-    res.status(500).json({ error: 'Something went wrong. Try again.' });
+    console.log('Book error:', error);
+    res.status(500).json({ error: 'Server error.' });
   }
 });
 
-// Existing: GET /api/books (buy page)
+// GET /api/books (buy)
 app.get('/api/books', async (req, res) => {
   try {
     const books = await Book.find().sort({ createdAt: -1 });
     res.json(books);
   } catch (error) {
-    console.log('Fetch books error:', error);
-    res.status(500).json({ error: 'Error getting books.' });
+    console.log('Books fetch error:', error);
+    res.status(500).json({ error: 'Fetch error.' });
   }
 });
 
-// Existing: POST /api/purchases (buy form)
+// POST /api/purchases (buy)
 app.post('/api/purchases', async (req, res) => {
   try {
     const { bookId, bookTitle, bookAuthor, bookPrice, buyerName, buyerEmail, buyerPhone } = req.body;
@@ -114,9 +113,9 @@ app.post('/api/purchases', async (req, res) => {
       return res.status(400).json({ error: 'Missing info!' });
     }
 
-    let phoneCheck = /^\+?[0-9\s\-]{7,15}$/;
-    if (!phoneCheck.test(buyerPhone)) {
-      return res.status(400).json({ error: 'Bad phone number!' });
+    const phonePattern = /^\+?[0-9\s\-]{7,15}$/;
+    if (!phonePattern.test(buyerPhone)) {
+      return res.status(400).json({ error: 'Invalid phone!' });
     }
 
     const cleanData = {
@@ -129,5 +128,83 @@ app.post('/api/purchases', async (req, res) => {
       buyerPhone: buyerPhone.trim()
     };
 
-    let newPurchase = new Purchase(cleanData);
+    const newPurchase = new Purchase(cleanData);
     await newPurchase.save();
+
+    res.status(201).json({ message: 'Purchase saved!' });
+  } catch (error) {
+    console.log('Purchase error:', error);
+    res.status(500).json({ error: 'Server error.' });
+  }
+});
+
+// POST /api/contact (contact form)
+app.post('/api/contact', async (req, res) => {
+  console.log('Contact route hit!');  // Debug
+  try {
+    const { name, email, message } = req.body;
+
+    if (!name || !email || !message) {
+      return res.status(400).json({ error: 'All fields required!' });
+    }
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailPattern.test(email)) {
+      return res.status(400).json({ error: 'Invalid email!' });
+    }
+
+    const cleanData = {
+      name: name.trim(),
+      email: email.trim(),
+      message: message.trim()
+    };
+
+    const newContact = new Contact(cleanData);
+    await newContact.save();
+
+    // Optional email (uncomment after Nodemailer setup)
+    // await sendContactEmail(name, email, message);
+
+    res.status(201).json({ message: 'Message received! Thanks!' });
+  } catch (error) {
+    console.log('Contact error:', error);
+    res.status(500).json({ error: 'Server error.' });
+  }
+});
+
+// GET /api/contact (view contacts)
+app.get('/api/contact', async (req, res) => {
+  try {
+    const contacts = await Contact.find().sort({ createdAt: -1 });
+    res.json(contacts);
+  } catch (error) {
+    console.log('Contacts fetch error:', error);
+    res.status(500).json({ error: 'Fetch error.' });
+  }
+});
+
+// Optional: Email function (add Nodemailer require and uncomment above)
+ /*
+const nodemailer = require('nodemailer');
+const transporter = nodemailer.createTransporter({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
+  }
+});
+
+async function sendContactEmail(name, email, message) {
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: process.env.EMAIL_USER,
+    subject: `New Contact from ${name}`,
+    text: `Name: ${name}\nEmail: ${email}\nMessage: ${message}`
+  };
+  await transporter.sendMail(mailOptions);
+}
+ */
+
+// Start server
+app.listen(PORT, () => {
+  console.log(`Server is on! Go to http://localhost:${PORT}`);
+});
