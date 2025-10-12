@@ -41,50 +41,93 @@
 
 
 
-   <script>
-    const form = document.getElementById('sellBookForm');
+<script>
+    const sellForm = document.getElementById('sellForm');
     const successMessage = document.getElementById('successMessage');
 
-    form.addEventListener('submit', async function(e) {
-        e.preventDefault();  // Stop normal form send
+    sellForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
 
-        // Get what user typed
-        const title = form.title.value.trim();
-        const author = form.author.value.trim();
-        const price = form.price.value;
-        const phone = form.phone.value.trim();
+        const title = document.getElementById('title').value.trim();
+        const author = document.getElementById('author').value.trim();
+        const price = document.getElementById('price').value.trim();
+        const phone = document.getElementById('phone').value.trim();
 
-        // Quick check (for better user experience)
+        // Validation
+        if (!title || !author || !price || !phone) {
+            alert('Please fill all fields.');
+            return;
+        }
+        if (parseFloat(price) <= 0) {
+            alert('Price must be greater than 0.');
+            return;
+        }
         const phonePattern = /^\+?[0-9\s\-]{7,15}$/;
-        if (!title || !author || !price || !phone || parseFloat(price) <= 0 || !phonePattern.test(phone)) {
-            alert("Fill everything right! Check phone.");
+        if (!phonePattern.test(phone)) {
+            alert('Please enter a valid phone number.');
             return;
         }
 
         try {
-            // Send data to your server (like mailing a letter)
-            const response = await fetch('https://book-seller-backend-b84y.onrender.com', {
+            // Step 1: Send to backend (Atlas DB)
+            const response = await fetch('https://book-seller-backend-b84y.onrender.com/api/books', {  // Your Render URL
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: new URLSearchParams({ title, author, price, phone })
+                body: new URLSearchParams({
+                    title: title,
+                    author: author,
+                    price: price,
+                    phone: phone
+                })
             });
 
             const data = await response.json();
 
-            if (response.ok) {  // If server says OK
-                alert('Book listed! Thanks!');
-                successMessage.textContent = data.message;
+            if (response.ok) {
+                // Step 2: NEW - Save to Google Sheets (after backend success)
+                await saveToGoogleSheets(title, author, price, phone);
+
+                // Show success
                 successMessage.style.display = 'block';
-                form.reset();  // Clear form
-                setTimeout(() => successMessage.style.display = 'none', 4000);
+                sellForm.reset();
+                alert(data.message || 'Book listed successfully!');
             } else {
                 alert('Error: ' + data.error);
             }
         } catch (error) {
-            alert('Connection problem. Is server running?');
-            console.log(error);
+            console.error('Error:', error);
+            alert('Connection problem. Is the server running?');
         }
     });
+
+    // NEW: Function to save to Google Sheets
+    async function saveToGoogleSheets(title, author, price, phone) {
+        // Replace with your Web App URL from Step 2
+        const sheetsUrl = 'https://script.google.com/macros/s/AKfycbyEYGW0Q39ksSlYXhuE_sC3ctFkOpCR8Hc-Wp_pdBhFLoEoLLVS50Zyl4QiFODLGZXB/exec';  // Paste full URL here
+
+        const formData = new URLSearchParams({
+            timestamp: new Date().toLocaleString('en-IN'),  // Indian date/time
+            title: title,
+            author: author,
+            price: price,
+            phone: phone,
+            type: 'Sell'  // Labels it
+        });
+
+        try {
+            const response = await fetch(sheetsUrl, {
+                method: 'POST',
+                body: formData
+            });
+            if (response.ok) {
+                console.log('Saved to Sell Sheet!');
+            } else {
+                console.log('Sheets failed (but DB saved OK).');
+            }
+        } catch (error) {
+            console.log('Sheets error (non-blocking):', error);  // Doesn't break form
+        }
+    }
 </script>
 	
 	
