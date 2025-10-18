@@ -5,6 +5,78 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>1st Semester - B.Ed. Study Material</title>
     <link rel="stylesheet" href="1st.css">  <!-- Link to the CSS file; adjust the path if needed -->
+    
+    <!-- PDF.js Scripts (from CDN) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>
+        // Set PDF.js worker
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    </script>
+    
+    <style>
+        /* Modal Styles (basic overlay) */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.8);
+        }
+        .modal-content {
+            background-color: #fff;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 800px;
+            text-align: center;
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close:hover { color: black; }
+        #pdf-canvas {
+            border: 1px solid #ccc;
+            max-width: 100%;
+            height: auto;
+        }
+        /* Disable text selection and printing */
+        body { user-select: none; -webkit-user-select: none; }
+        @media print { body { display: none; } }
+        
+        /* Toolbar Styles */
+        #pdf-toolbar button {
+            margin: 0 5px;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+        #pdf-toolbar {
+            background-color: #f0f0f0;
+            padding: 10px;
+            border-bottom: 1px solid #ccc;
+        }
+        
+        /* Fullscreen Mode */
+        .modal-content.fullscreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 1000;
+            background-color: white;
+        }
+        .modal-content.fullscreen #pdf-container {
+            max-height: 90vh;
+        }
+    </style>
 </head>
 <body>
     <header>
@@ -15,48 +87,170 @@
     <main>
         <section id="books">
             <h2>Books</h2>
-            <p>Here are some recommended books for 1st Semester. Click the links to download or view online.</p>
+            <p>Here are some recommended books for 1st Semester. Click the links to view online (no download/print options).</p>
             <div class="material-card">
                 <h3>Book 1: Philosophical and Sociological Perspective of Education</h3>
                 <p>Author: UPRTOU</p>
-                <a href="../error.html" class="btn">View Online</a>
+                <button class="btn" onclick="openPdfModal('books/1stpaper.pdf')">View Online</button>  <!-- Updated path based on your error -->
             </div>
             <div class="material-card">
                 <h3>Book 2: Psychological Perspective of Education</h3>
                 <p>Author: UPRTOU</p>
-                <a href="../error.html" class="btn">View Online</a>
+                <button class="btn" onclick="openPdfModal('books/2ndpaper.pdf')">View Online</button>  <!-- Adjust path as needed -->
             </div>
             <div class="material-card">
                 <h3>Book 3: Technological Perspective of Education</h3>
                 <p>Author: UPRTOU</p>
-                <a href="../error.html" class="btn">View Online</a>
+                <button class="btn" onclick="openPdfModal('books/3rdpaper.pdf')">View Online</button>  <!-- Adjust path as needed -->
             </div>            
             <!-- Add more books as needed -->
         </section>
         
         <section id="notes">
-            <h2>Notes</h2>
-            <p>Detailed notes on key topics. Download and study at your own pace.</p>
+            <h2>Notes (If you want to share your notes please mail us at <a href="mailto:oldbooksmarketplace@gmail.com" style="color:blue; text-decoration:none;">oldbooksmarketplace@gmail.com</a>)</h2>
+            <h2>Currently unavailable, but I'll share soon after my notes are ready.</h2>
+            <p>Detailed notes on key topics. View online only (no download/print options).</p>
             <div class="material-card">
                 <h3>Notes on Educational Psychology</h3>
                 <p>Covers theories and applications.</p>
-                <a href="../error.html" class="btn">Download Notes (PDF)</a>
+                <button class="btn" onclick="openPdfModal('./bed/books/notes1.pdf')">View Online</button>  <!-- Adjust path as needed -->
             </div>
             <div class="material-card">
                 <h3>Notes on Teaching Methods</h3>
                 <p>Focuses on modern teaching techniques.</p>
-                <a href="../error.html" class="btn">Download Notes (PDF)</a>
+                <button class="btn" onclick="openPdfModal('./bed/books/notes2.pdf')">View Online</button>  <!-- Adjust path as needed -->
             </div>
             <!-- Add more notes as needed -->
         </section>
         
-      
-            <!-- Add more materials as needed -->
-        </section>
+        <!-- Modal for PDF Viewer -->
+        <div id="pdfModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closePdfModal()">&times;</span>
+                <h2>PDF Viewer</h2>
+                
+                <!-- Toolbar for Controls -->
+                <div id="pdf-toolbar" style="margin-bottom: 10px; text-align: center;">
+                    <button id="prev-page" onclick="changePage(-1)">Previous</button>
+                    <span id="page-info">Page: <span id="current-page">1</span> / <span id="total-pages">1</span></span>
+                    <button id="next-page" onclick="changePage(1)">Next</button>
+                    <button id="zoom-in" onclick="zoomIn()">Zoom In</button>
+                    <button id="zoom-out" onclick="zoomOut()">Zoom Out</button>
+                    <button id="fullscreen-btn" onclick="toggleFullscreen()">Fullscreen</button>
+                </div>
+                
+                <!-- Scrollable Container for Multi-Page PDFs -->
+                <div id="pdf-container" style="max-height: 600px; overflow-y: auto; border: 1px solid #ccc;">
+                    <canvas id="pdf-canvas"></canvas>
+                </div>
+            </div>
+        </div>
     </main>
     
     <footer style="text-align: center; padding: 10px; background-color: black; margin-top: 20px;">
-           &copy; 2025 MOHD MUSTQEEM SIDDIQI. All rights reserved.
-       </footer>
+        &copy; 2025 MOHD MUSTQEEM SIDDIQI. All rights reserved.
+    </footer>
+    
+    <script>
+        // Disable right-click context menu
+        document.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+        });
+
+        let pdfDoc = null;
+        let currentPage = 1;
+        let scale = 1.5; // Default zoom
+
+        // Function to open modal and load PDF
+        function openPdfModal(pdfUrl) {
+            const modal = document.getElementById('pdfModal');
+            modal.style.display = 'block';
+            
+            // Reset variables
+            currentPage = 1;
+            scale = 1.5;
+            
+            // Load and render PDF
+            pdfjsLib.getDocument(pdfUrl).promise.then(function(pdf) {
+                pdfDoc = pdf;
+                document.getElementById('total-pages').textContent = pdf.numPages;
+                renderPage(currentPage);
+            }).catch(function(error) {
+                console.error('Error loading PDF:', error);
+                alert('Failed to load PDF: ' + error.message);
+            });
+        }
+
+        // Function to render a specific page
+        function renderPage(pageNum) {
+            pdfDoc.getPage(pageNum).then(function(page) {
+                const canvas = document.getElementById('pdf-canvas');
+                const context = canvas.getContext('2d');
+                const viewport = page.getViewport({ scale: scale });
+                
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+                
+                const renderContext = {
+                    canvasContext: context,
+                    viewport: viewport
+                };
+                
+                page.render(renderContext);
+                document.getElementById('current-page').textContent = pageNum;
+            });
+        }
+
+        // Change page (for scroll/navigation)
+        function changePage(delta) {
+            if (pdfDoc) {
+                currentPage += delta;
+                if (currentPage < 1) currentPage = 1;
+                if (currentPage > pdfDoc.numPages) currentPage = pdfDoc.numPages;
+                renderPage(currentPage);
+            }
+        }
+
+        // Zoom functions
+        function zoomIn() {
+            scale += 0.25;
+            renderPage(currentPage);
+        }
+
+        function zoomOut() {
+            if (scale > 0.5) {
+                scale -= 0.25;
+                renderPage(currentPage);
+            }
+        }
+
+        // Fullscreen toggle
+        function toggleFullscreen() {
+            const modalContent = document.querySelector('.modal-content');
+            if (!document.fullscreenElement) {
+                modalContent.requestFullscreen().catch(err => {
+                    alert('Fullscreen not supported: ' + err.message);
+                });
+                modalContent.classList.add('fullscreen');
+            } else {
+                document.exitFullscreen();
+                modalContent.classList.remove('fullscreen');
+            }
+        }
+
+        // Function to close modal
+        function closePdfModal() {
+            document.getElementById('pdfModal').style.display = 'none';
+            pdfDoc = null; // Reset
+        }
+
+        // Close modal on outside click
+        window.onclick = function(event) {
+            const modal = document.getElementById('pdfModal');
+            if (event.target === modal) {
+                closePdfModal();
+            }
+        };
+    </script>
 </body>
 </html>

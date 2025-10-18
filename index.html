@@ -6,6 +6,46 @@
     <title> Old Books Marketplace </title>
     <link rel="stylesheet" href="css/home.css">  <!-- Correct link to your CSS file -->
     <!-- Removed the broken link tag as suggested -->
+    <style>
+        /* Modal styles */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 1; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgb(0,0,0); /* Fallback color */
+            background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto; /* 15% from the top and centered */
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%; /* Could be more or less, depending on screen size */
+            max-width: 400px;
+            text-align: center;
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .qr-code {
+            max-width: 200px;
+            height: auto;
+        }
+    </style>
 </head>
 
 <body>
@@ -47,8 +87,51 @@
 
     <a href="b.ed.html" target="_self"> Online B.Ed. Resources </a>
 
+    <!-- The Modal -->
+    <div id="fundraisingModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Support Us!</h2>
+            <p style="color:black;">We're collecting funds to buy domain for our website. Your contribution helps us grow!</p>
+            <p style="color:black;"><strong>Name:</strong> MOHD MUSTQEEM SIDDIQI</p>
+            <p style="color:black;">
+  <strong>UPI ID:</strong>
+  <span class="copyable" onclick="navigator.clipboard.writeText('mustakeemsiddiqui306@pingpay') && alert('Copied!')">
+    mustakeemsiddiqui306@pingpay
+  </span>
+</p>
+            <img src="images/qr.png" alt="UPI QR Code" class="qr-code"> <!-- Replace with your actual QR code image path -->
+            <p style="color:black;">Scan the QR code or use the UPI ID to contribute.</p>
+        </div>
+    </div>
+
     <footer style="text-align: center; padding: 10px; background-color: black; margin-top: 20px;">
         &copy; 2025 MOHD MUSTQEEM SIDDIQI. All rights reserved.
     </footer>
+
+    <script>
+        // Get the modal
+        var modal = document.getElementById("fundraisingModal");
+
+        // Get the <span> element that closes the modal
+        var span = document.getElementsByClassName("close")[0];
+
+        // When the page loads, open the modal
+        window.onload = function() {
+            modal.style.display = "block";
+        }
+
+        // When the user clicks on <span> (x), close the modal
+        span.onclick = function() {
+            modal.style.display = "none";
+        }
+
+        // When the user clicks anywhere outside of the modal, close it
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+    </script>
 </body>
 </html>

@@ -180,3 +180,12 @@ a:focus-visible {
     transform: translateX(-100%);
   }
 }
+
+.copyable {
+  cursor: pointer;
+  color: blue;
+  text-decoration: underline;
+}
+.copyable:active {
+  opacity: 0.6;
+}
