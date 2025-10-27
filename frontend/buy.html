@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Buy Books - Old Books Marketplace</title>
-    <link rel="stylesheet" href="css/buy.css">  <!-- NOTE: If your CSS is in 'frontend/css/', change to 'frontend/css/buy.css'. Confirm your repo structure. -->
+    <link rel="stylesheet" href="css/buy.css">  <!-- If your CSS is in 'frontend/css/', change to 'frontend/css/buy.css'. Confirm your repo structure. -->
     <style>
         /* Nav styles (matching homepage) */
         nav#navMenu {
@@ -84,29 +84,31 @@
             background: #fff;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
             text-align: center;
-            height: 350px;  /* Fixed height to prevent shifts */
+            min-height: 350px;  /* CHANGED: Flexible height to prevent cutting */
             display: flex;
             flex-direction: column;
             justify-content: space-between;
+            transition: min-height 0.3s ease;  /* Smooth expansion */
+        }
+        .book-card.expanded {
+            min-height: 450px;  /* CHANGED: Expand when full details are shown */
         }
         .book-card img {
             width: 100%;
             height: 150px;
-            object-fit: cover;
+            object-fit: cover;  /* Ensures image fits without distortion */
             border-radius: 4px;
             loading: lazy;  /* Lazy load to reduce initial flicker */
         }
         .book-card h3 {
             margin: 10px 0;
             font-size: 18px;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            /* REMOVED: overflow: hidden; text-overflow: ellipsis; to show full text */
         }
         .book-card p {
             margin: 5px 0;
             font-size: 14px;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            /* REMOVED: overflow: hidden; text-overflow: ellipsis; to show full text */
         }
         .contact-btn {
             background: #00ff84;
@@ -299,11 +301,14 @@
             }
         }
 
-        // Toggle full details (login gate)
+        // Toggle full details (login gate) - UPDATED: Add/remove 'expanded' class for proper display
         function toggleDetails(bookId) {
             const details = document.getElementById(`details-${bookId}`);
+            const card = details.closest('.book-card');  // Find the parent card
             if (isLoggedIn) {
-                details.style.display = details.style.display === 'none' ? 'block' : 'none';
+                const isVisible = details.style.display === 'block';
+                details.style.display = isVisible ? 'none' : 'block';
+                card.classList.toggle('expanded', !isVisible);  // Expand card when details are shown
             } else {
                 window.location.href = 'login.html';
             }
