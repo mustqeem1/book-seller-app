@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Buy Books - Old Books Marketplace</title>
-    <link rel="stylesheet" href="css/buy.css">  <!-- Assumes you have this CSS file with grid styles -->
+    <link rel="stylesheet" href="css/buy.css">  <!-- NOTE: If your CSS is in 'frontend/css/', change to 'frontend/css/buy.css'. Confirm your repo structure. -->
     <style>
         /* Nav styles (matching homepage) */
         nav#navMenu {
@@ -236,14 +236,15 @@
             location.reload();
         }
 
-        // Fetch books from API
+        // Fetch books from API (FIXED: Access the 'books' array from the response object)
         async function fetchBooks() {
             const loading = document.getElementById('loading');
             loading.style.display = 'block';
             try {
                 const response = await fetch('https://book-seller-backend-b84y.onrender.com/api/books');
                 if (!response.ok) throw new Error('Failed to fetch books');
-                allBooks = await response.json();
+                const data = await response.json();  // Response is { books: [...], ... }
+                allBooks = data.books;  // FIX: Access the 'books' array
                 displayedBooks = [...allBooks];
                 renderBooks(true);  // Full render on initial load
             } catch (error) {
