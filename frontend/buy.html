@@ -152,6 +152,8 @@
         .load-more:hover {
             background: #00ff84;
         }
+        /* Hide full details by default */
+        .full-details { display: none; }
     </style>
 </head>
 <body>
@@ -252,7 +254,7 @@
             }
         }
 
-        // Render books - Fixed: Incremental updates to prevent flicker
+        // Render books - Updated to show limited info with login gate
         function renderBooks(fullRender = false) {
             const grid = document.getElementById('bookGrid');
             const loadMoreBtn = document.getElementById('loadMore');
@@ -277,9 +279,13 @@
                     <p><strong>Language:</strong> ${book.language}</p>
                     <p><strong>Price:</strong> ₹${book.sellingPrice} (Original: ₹${book.originalPrice})</p>
                     <p><strong>Negotiable:</strong> ${book.negotiable}</p>
-                    <p><strong>Location:</strong> ${book.city}</p>
-                    <p><strong>Delivery:</strong> ${book.delivery}</p>
-                    <button class="contact-btn" onclick="contactSeller('${book.phone}', '${book.name}')">Contact Seller</button>
+                    <div class="full-details" id="details-${book._id}">
+                        <p><strong>Seller:</strong> ${book.name}</p>
+                        <p><strong>Location:</strong> ${book.city}</p>
+                        <p><strong>Delivery:</strong> ${book.delivery}</p>
+                        <button class="contact-btn" onclick="contactSeller('${book.phone}', '${book.name}')">Contact Seller</button>
+                    </div>
+                    <button class="contact-btn" onclick="toggleDetails('${book._id}')">Login to View Full Details</button>
                 `;
                 fragment.appendChild(card);
             });
@@ -289,6 +295,16 @@
                 loadMoreBtn.style.display = 'block';
             } else {
                 loadMoreBtn.style.display = 'none';
+            }
+        }
+
+        // Toggle full details (login gate)
+        function toggleDetails(bookId) {
+            const details = document.getElementById(`details-${bookId}`);
+            if (isLoggedIn) {
+                details.style.display = details.style.display === 'none' ? 'block' : 'none';
+            } else {
+                window.location.href = 'login.html';
             }
         }
 

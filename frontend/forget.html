@@ -27,9 +27,14 @@
     <script>
         document.getElementById('forgotForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const email = document.getElementById('email').value;
+            const email = document.getElementById('email').value.trim();
             const message = document.getElementById('message');
             message.textContent = '';
+
+            if (!email) {
+                message.textContent = 'Please enter your email.';
+                return;
+            }
 
             try {
                 const response = await fetch('https://book-seller-backend-b84y.onrender.com/api/forgot-password', {
@@ -42,10 +47,11 @@
                     message.style.color = 'green';
                     message.textContent = 'Reset link sent to your email!';
                 } else {
-                    message.textContent = data.error || 'Failed to send reset link';
+                    message.textContent = data.error || 'Failed to send reset link. Check email.';
                 }
             } catch (error) {
-                message.textContent = 'Network error. Try again.';
+                console.error(error);
+                message.textContent = 'Network error. Check your connection or backend.';
             }
         });
     </script>

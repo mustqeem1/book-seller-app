@@ -34,10 +34,15 @@
     <script>
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const email = document.getElementById('email').value;
+            const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
             const message = document.getElementById('message');
             message.textContent = '';
+
+            if (!email || !password) {
+                message.textContent = 'Please fill all fields.';
+                return;
+            }
 
             try {
                 const response = await fetch('https://book-seller-backend-b84y.onrender.com/api/login', {
@@ -52,12 +57,16 @@
                     localStorage.setItem('isLoggedIn', 'true');
                     message.style.color = 'green';
                     message.textContent = 'Login successful!';
-                    setTimeout(() => window.location.href = 'index.html', 1000);
+                    // Redirect to intended page or homepage
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const redirect = urlParams.get('redirect') || 'index.html';
+                    setTimeout(() => window.location.href = redirect, 1000);
                 } else {
-                    message.textContent = data.error || 'Login failed';
+                    message.textContent = data.error || 'Login failed. Check credentials.';
                 }
             } catch (error) {
-                message.textContent = 'Network error. Try again.';
+                console.error(error);
+                message.textContent = 'Network error. Check your connection or backend.';
             }
         });
     </script>

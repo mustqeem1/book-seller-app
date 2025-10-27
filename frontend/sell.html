@@ -85,7 +85,7 @@
     <header>
         <h1>Sell Your Book</h1>
     </header>
-    <main>
+    <main id="sellMain" style="display: none;">  <!-- Hidden by default; shown only if logged in -->
         <h2>Enter Book Details</h2>
         <form id="sellBookForm" novalidate>
             <label for="title">Book Title</label>
@@ -168,6 +168,10 @@
             <button type="reset">Reset</button>
         </form>
     </main>
+    <div id="loginRequired" style="text-align: center; padding: 50px;">
+        <h2>You must log in to sell books.</h2>
+        <p><a href="login.html">Click here to login</a></p>
+    </div>
     <footer style="text-align: center; padding: 10px; background-color: black; color: white; margin-top: 20px;">
         &copy; 2025 MOHD MUSTQEEM SIDDIQI. All rights reserved.
     </footer>
@@ -176,10 +180,19 @@
         const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
         const loginTab = document.getElementById('loginTab');
         const registerTab = document.getElementById('registerTab');
+        const sellMain = document.getElementById('sellMain');
+        const loginRequired = document.getElementById('loginRequired');
+
         if (isLoggedIn) {
             loginTab.innerHTML = '<a href="dashboard.html">Dashboard</a>';
             registerTab.innerHTML = '<a href="#" onclick="logout()">Logout</a>';
+            sellMain.style.display = 'block';  // Show the original form if logged in
+            loginRequired.style.display = 'none';
+        } else {
+            sellMain.style.display = 'none';
+            loginRequired.style.display = 'block';
         }
+
         function logout() {
             localStorage.removeItem('isLoggedIn');
             location.reload();

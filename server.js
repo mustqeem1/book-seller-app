@@ -36,7 +36,7 @@ const contactLimiter = rateLimit({
 });
 
 // Email transporter
-const transporter = nodemailer.createTransport({
+const transporter = nodemailer.createTransporter({
   service: 'gmail',
   auth: {
     user: process.env.EMAIL_USER,
@@ -134,7 +134,11 @@ app.post('/api/register', [
     await newUser.save();
     res.json({ message: 'User registered!' });
   } catch (error) {
-    res.status(500).json({ error: 'Registration failed' });
+    if (error.code === 11000) {  // Duplicate email
+      res.status(400).json({ error: 'Email already exists' });
+    } else {
+      res.status(500).json({ error: 'Registration failed' });
+    }
   }
 });
 
@@ -156,6 +160,35 @@ app.post('/api/login', [
     res.json({ token, user: { id: user._id, name: user.name, email: user.email } });
   } catch (error) {
     res.status(500).json({ error: 'Login failed' });
+  }
+});
+
+// Forgot password
+app.post('/api/forgot-password', [
+  body('email').isEmail(),
+], async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+
+  try {
+    const { email } = req.body;
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    // Generate a reset token
+    const resetToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '15m' });
+    const resetLink = `https://yourfrontend.com/reset-password?token=${resetToken}`;  // Update with your frontend URL
+
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: 'Password Reset',
+      text: `Click here to reset your password: ${resetLink}`,
+    });
+
+    res.json({ message: 'Reset link sent to your email!' });
+  } catch (error) {
+    res.status(500).json({ error: 'Server error' });
   }
 });
 
@@ -317,81 +350,6 @@ app.get('/api/contact', async (req, res) => {
     res.json(contacts);
   } catch (error) {
     res.status(500).json({ error: 'Fetch error' });
-  }
-});
-
-// User registration
-app.post('/api/register', [
-  body('name').notEmpty().trim(),
-  body('email').isEmail().normalizeEmail(),
-  body('password').isLength({ min: 6 }),
-  body('phone').notEmpty(),
-], async (req, res) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
-
-  try {
-    const { name, email, password, phone } = req.body;
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = new User({ name, email, password: hashedPassword, phone });
-    await newUser.save();
-    res.json({ message: 'User registered!' });
-  } catch (error) {
-    if (error.code === 11000) {  // Duplicate email
-      res.status(400).json({ error: 'Email already exists' });
-    } else {
-      res.status(500).json({ error: 'Registration failed' });
-    }
-  }
-});
-
-// User login
-app.post('/api/login', [
-  body('email').isEmail(),
-  body('password').notEmpty(),
-], async (req, res) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
-
-  try {
-    const { email, password } = req.body;
-    const user = await User.findOne({ email });
-    if (!user || !(await bcrypt.compare(password, user.password))) {
-      return res.status(401).json({ error: 'Invalid credentials' });
-    }
-    const token = jwt.sign({ id: user._id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '1h' });
-    res.json({ token, user: { id: user._id, name: user.name, email: user.email } });
-  } catch (error) {
-    res.status(500).json({ error: 'Login failed' });
-  }
-});
-
-// Forgot password
-app.post('/api/forgot-password', [
-  body('email').isEmail(),
-], async (req, res) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
-
-  try {
-    const { email } = req.body;
-    const user = await User.findOne({ email });
-    if (!user) return res.status(404).json({ error: 'User not found' });
-
-    // Generate a reset token
-    const resetToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '15m' });
-    const resetLink = `https://yourfrontend.com/reset-password?token=${resetToken}`;  // Update with your frontend URL
-
-    await transporter.sendMail({
-      from: process.env.EMAIL_USER,
-      to: email,
-      subject: 'Password Reset',
-      text: `Click here to reset your password: ${resetLink}`,
-    });
-
-    res.json({ message: 'Reset link sent to your email!' });
-  } catch (error) {
-    res.status(500).json({ error: 'Server error' });
   }
 });
 
