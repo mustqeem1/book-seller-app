@@ -175,176 +175,177 @@
     <footer style="text-align: center; padding: 10px; background-color: black; color: white; margin-top: 20px;">
         &copy; 2025 MOHD MUSTQEEM SIDDIQI. All rights reserved.
     </footer>
-    <script>
-        // Handle login state
-        const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
-        const loginTab = document.getElementById('loginTab');
-        const registerTab = document.getElementById('registerTab');
-        const sellMain = document.getElementById('sellMain');
-        const loginRequired = document.getElementById('loginRequired');
+<script>
+    // Handle login state
+    const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+    const loginTab = document.getElementById('loginTab');
+    const registerTab = document.getElementById('registerTab');
+    const sellMain = document.getElementById('sellMain');
+    const loginRequired = document.getElementById('loginRequired');
 
-        if (isLoggedIn) {
-            loginTab.innerHTML = '<a href="dashboard.html">Dashboard</a>';
-            registerTab.innerHTML = '<a href="#" onclick="logout()">Logout</a>';
-            sellMain.style.display = 'block';  // Show the original form if logged in
-            loginRequired.style.display = 'none';
+    if (isLoggedIn) {
+        loginTab.innerHTML = '<a href="dashboard.html">Dashboard</a>';
+        registerTab.innerHTML = '<a href="#" onclick="logout()">Logout</a>';
+        sellMain.style.display = 'block';  // Show the original form if logged in
+        loginRequired.style.display = 'none';
+    } else {
+        sellMain.style.display = 'none';
+        loginRequired.style.display = 'block';
+    }
+
+    function logout() {
+        localStorage.removeItem('isLoggedIn');
+        location.reload();
+    }
+
+    // Toggle "Other" fields
+    function toggleOtherInput(selectId, inputId, otherValue) {
+        const select = document.getElementById(selectId);
+        const input = document.getElementById(inputId);
+        select.addEventListener('change', function() {
+            if (this.value === otherValue) {
+                input.style.display = 'block';
+                input.required = true;
+            } else {
+                input.style.display = 'none';
+                input.required = false;
+                input.value = '';
+            }
+        });
+    }
+    toggleOtherInput('type', 'otherType', 'Others');
+    toggleOtherInput('language', 'otherLanguage', 'Other');
+
+    // Image preview
+    document.getElementById('image').addEventListener('change', function(event) {
+        const file = event.target.files[0];
+        const preview = document.getElementById('imagePreview');
+        const previewImg = document.getElementById('previewImg');
+        if (file && file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                previewImg.src = e.target.result;
+                preview.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
         } else {
-            sellMain.style.display = 'none';
-            loginRequired.style.display = 'block';
+            preview.style.display = 'none';
+            previewImg.src = '';
+            if (file) alert('Please select a valid image file.');
+        }
+    });
+
+    // Form submission
+    const sellForm = document.getElementById('sellBookForm');
+    const loading = document.getElementById('loading');
+    const progressBar = document.getElementById('progressBar');
+    const progress = document.querySelector('.progress');
+
+    sellForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const title = document.getElementById('title').value.trim();
+        const condition = document.getElementById('condition').value;
+        const typeSelect = document.getElementById('type').value;
+        const type = typeSelect === 'Others' ? document.getElementById('otherType').value.trim() : typeSelect;
+        const languageSelect = document.getElementById('language').value;
+        const language = languageSelect === 'Other' ? document.getElementById('otherLanguage').value.trim() : languageSelect;
+        const author = document.getElementById('author').value.trim();
+        const originalPrice = parseFloat(document.getElementById('originalPrice').value);
+        const sellingPrice = parseFloat(document.getElementById('sellingPrice').value);
+        const quantity = document.getElementById('quantity').value;
+        const negotiable = document.querySelector('input[name="negotiable"]:checked')?.value || '';
+        const name = document.getElementById('name').value.trim();
+        const phone = document.getElementById('phone').value.trim();
+        const city = document.getElementById('city').value.trim();
+        const delivery = document.getElementById('delivery').value;
+        const imageFile = document.getElementById('image').files[0];
+
+        // Validation
+        if (!title || !condition || !type || !language || !author || isNaN(originalPrice) || originalPrice <= 0 || isNaN(sellingPrice) || sellingPrice <= 0 || !quantity || !negotiable || !name || !phone || !city || !delivery) {
+            alert('Please fill all required fields.');
+            return;
+        }
+        if (sellingPrice > originalPrice) {
+            alert('Selling price cannot be higher than original price.');
+            return;
+        }
+        const phonePattern = /^\+?[0-9\s\-]{7,15}$/;
+        if (!phonePattern.test(phone)) {
+            alert('Please enter a valid phone number.');
+            return;
+        }
+        if (imageFile && (!imageFile.type.startsWith('image/') || imageFile.size > 5 * 1024 * 1024)) {
+            alert('Please select a valid image file under 5MB.');
+            return;
         }
 
-        function logout() {
-            localStorage.removeItem('isLoggedIn');
-            location.reload();
-        }
+        // Prepare FormData
+        const formData = new FormData();
+        formData.append('title', title);
+        formData.append('condition', condition);
+        formData.append('type', type);
+        formData.append('language', language);
+        formData.append('author', author);
+        formData.append('originalPrice', originalPrice);
+        formData.append('sellingPrice', sellingPrice);
+        formData.append('quantity', quantity);
+        formData.append('negotiable', negotiable);
+        formData.append('name', name);
+        formData.append('phone', phone);
+        formData.append('city', city);
+        formData.append('delivery', delivery);
+        if (imageFile) formData.append('image', imageFile);
 
-        // Toggle "Other" fields
-        function toggleOtherInput(selectId, inputId, otherValue) {
-            const select = document.getElementById(selectId);
-            const input = document.getElementById(inputId);
-            select.addEventListener('change', function() {
-                if (this.value === otherValue) {
-                    input.style.display = 'block';
-                    input.required = true;
-                } else {
-                    input.style.display = 'none';
-                    input.required = false;
-                    input.value = '';
+        loading.style.display = 'block';
+        progress.style.display = 'block';
+
+        try {
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', 'https://book-seller-backend-b84y.onrender.com/api/books');
+            xhr.setRequestHeader('Authorization', `Bearer ${localStorage.getItem('token')}`);  // Include JWT token for authentication
+            xhr.upload.addEventListener('progress', (e) => {
+                if (e.lengthComputable) {
+                    const percent = (e.loaded / e.total) * 100;
+                    progressBar.style.width = percent + '%';
                 }
             });
+            xhr.onload = async () => {
+                if (xhr.status === 200) {
+                    await saveToGoogleSheets(title, condition, type, language, author, originalPrice, sellingPrice, quantity, negotiable, name, phone, city, delivery);
+                    alert('Book listed successfully!');
+                    sellForm.reset();
+                    document.getElementById('imagePreview').style.display = 'none';
+                    document.getElementById('previewImg').src = '';
+                } else {
+                    alert('Error: ' + JSON.parse(xhr.responseText).error);
+                }
+            };
+            xhr.onerror = () => alert('Connection problem. Is the server running?');
+            xhr.send(formData);
+        } catch (error) {
+            console.error(error);
+            alert('Submission failed.');
+        } finally {
+            loading.style.display = 'none';
+            progress.style.display = 'none';
+            progressBar.style.width = '0%';
         }
-        toggleOtherInput('type', 'otherType', 'Others');
-        toggleOtherInput('language', 'otherLanguage', 'Other');
+    });
 
-        // Image preview
-        document.getElementById('image').addEventListener('change', function(event) {
-            const file = event.target.files[0];
-            const preview = document.getElementById('imagePreview');
-            const previewImg = document.getElementById('previewImg');
-            if (file && file.type.startsWith('image/')) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    previewImg.src = e.target.result;
-                    preview.style.display = 'block';
-                };
-                reader.readAsDataURL(file);
-            } else {
-                preview.style.display = 'none';
-                previewImg.src = '';
-                if (file) alert('Please select a valid image file.');
-            }
+    // Save to Google Sheets
+    async function saveToGoogleSheets(title, condition, type, language, author, originalPrice, sellingPrice, quantity, negotiable, name, phone, city, delivery) {
+        const sheetsUrl = 'https://script.google.com/macros/s/AKfycbyEYGW0Q39ksSlYXhuE_sC3ctFkOpCR8Hc-Wp_pdBhFLoEoLLVS50Zyl4QiFODLGZXB/exec';
+        const formData = new URLSearchParams({
+            timestamp: new Date().toLocaleString('en-IN'),
+            title, condition, type, language, author, originalPrice, sellingPrice, quantity, negotiable, name, phone, city, delivery,
+            typeLabel: 'Sell'
         });
-
-        // Form submission
-        const sellForm = document.getElementById('sellBookForm');
-        const loading = document.getElementById('loading');
-        const progressBar = document.getElementById('progressBar');
-        const progress = document.querySelector('.progress');
-
-        sellForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const title = document.getElementById('title').value.trim();
-            const condition = document.getElementById('condition').value;
-            const typeSelect = document.getElementById('type').value;
-            const type = typeSelect === 'Others' ? document.getElementById('otherType').value.trim() : typeSelect;
-            const languageSelect = document.getElementById('language').value;
-            const language = languageSelect === 'Other' ? document.getElementById('otherLanguage').value.trim() : languageSelect;
-            const author = document.getElementById('author').value.trim();
-            const originalPrice = parseFloat(document.getElementById('originalPrice').value);
-            const sellingPrice = parseFloat(document.getElementById('sellingPrice').value);
-            const quantity = document.getElementById('quantity').value;
-            const negotiable = document.querySelector('input[name="negotiable"]:checked')?.value || '';
-            const name = document.getElementById('name').value.trim();
-            const phone = document.getElementById('phone').value.trim();
-            const city = document.getElementById('city').value.trim();
-            const delivery = document.getElementById('delivery').value;
-            const imageFile = document.getElementById('image').files[0];
-
-            // Validation
-            if (!title || !condition || !type || !language || !author || isNaN(originalPrice) || originalPrice <= 0 || isNaN(sellingPrice) || sellingPrice <= 0 || !quantity || !negotiable || !name || !phone || !city || !delivery) {
-                alert('Please fill all required fields.');
-                return;
-            }
-            if (sellingPrice > originalPrice) {
-                alert('Selling price cannot be higher than original price.');
-                return;
-            }
-            const phonePattern = /^\+?[0-9\s\-]{7,15}$/;
-            if (!phonePattern.test(phone)) {
-                alert('Please enter a valid phone number.');
-                return;
-            }
-            if (imageFile && (!imageFile.type.startsWith('image/') || imageFile.size > 5 * 1024 * 1024)) {
-                alert('Please select a valid image file under 5MB.');
-                return;
-            }
-
-            // Prepare FormData
-            const formData = new FormData();
-            formData.append('title', title);
-            formData.append('condition', condition);
-            formData.append('type', type);
-            formData.append('language', language);
-            formData.append('author', author);
-            formData.append('originalPrice', originalPrice);
-            formData.append('sellingPrice', sellingPrice);
-            formData.append('quantity', quantity);
-            formData.append('negotiable', negotiable);
-            formData.append('name', name);
-            formData.append('phone', phone);
-            formData.append('city', city);
-            formData.append('delivery', delivery);
-            if (imageFile) formData.append('image', imageFile);
-
-            loading.style.display = 'block';
-            progress.style.display = 'block';
-
-            try {
-                const xhr = new XMLHttpRequest();
-                xhr.open('POST', 'https://book-seller-backend-b84y.onrender.com/api/books');
-                xhr.upload.addEventListener('progress', (e) => {
-                    if (e.lengthComputable) {
-                        const percent = (e.loaded / e.total) * 100;
-                        progressBar.style.width = percent + '%';
-                    }
-                });
-                xhr.onload = async () => {
-                    if (xhr.status === 200) {
-                        await saveToGoogleSheets(title, condition, type, language, author, originalPrice, sellingPrice, quantity, negotiable, name, phone, city, delivery);
-                        alert('Book listed successfully!');
-                        sellForm.reset();
-                        document.getElementById('imagePreview').style.display = 'none';
-                        document.getElementById('previewImg').src = '';
-                    } else {
-                        alert('Error: ' + JSON.parse(xhr.responseText).error);
-                    }
-                };
-                xhr.onerror = () => alert('Connection problem. Is the server running?');
-                xhr.send(formData);
-            } catch (error) {
-                console.error(error);
-                alert('Submission failed.');
-            } finally {
-                loading.style.display = 'none';
-                progress.style.display = 'none';
-                progressBar.style.width = '0%';
-            }
-        });
-
-        // Save to Google Sheets
-        async function saveToGoogleSheets(title, condition, type, language, author, originalPrice, sellingPrice, quantity, negotiable, name, phone, city, delivery) {
-            const sheetsUrl = 'https://script.google.com/macros/s/AKfycbyEYGW0Q39ksSlYXhuE_sC3ctFkOpCR8Hc-Wp_pdBhFLoEoLLVS50Zyl4QiFODLGZXB/exec';
-            const formData = new URLSearchParams({
-                timestamp: new Date().toLocaleString('en-IN'),
-                title, condition, type, language, author, originalPrice, sellingPrice, quantity, negotiable, name, phone, city, delivery,
-                typeLabel: 'Sell'
-            });
-            try {
-                await fetch(sheetsUrl, { method: 'POST', body: formData });
-            } catch (error) {
-                console.log('Sheets error (non-blocking):', error);
-            }
+        try {
+            await fetch(sheetsUrl, { method: 'POST', body: formData });
+        } catch (error) {
+            console.log('Sheets error (non-blocking):', error);
         }
-    </script>
+    }
+</script>
 </body>
 </html>
