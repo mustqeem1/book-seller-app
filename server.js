@@ -35,8 +35,8 @@ const contactLimiter = rateLimit({
   message: 'Too many contact requests, please try again later.',
 });
 
-// Email transporter
-const transporter = nodemailer.createTransporter({
+// Email transporter (FIXED: createTransport, not createTransporter)
+const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
     user: process.env.EMAIL_USER,
