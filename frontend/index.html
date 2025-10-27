@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Old Books Marketplace</title>
+    <link rel="stylesheet" href="css/home.css">
+    <style>
+        /* Modal styles */
+        .modal { display: none; position: fixed; z-index: 1; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4); }
+        .modal-content { background-color: #fefefe; margin: 15% auto; padding: 20px; border: 1px solid #888; width: 80%; max-width: 400px; text-align: center; }
+        .close { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
+        .close:hover { color: black; }
+        .qr-code { max-width: 200px; height: auto; }
+        /* Nav styles */
+        nav#navMenu { position: absolute; top: 20px; right: 20px; background: rgba(0, 255, 132, 0.1); border-radius: 8px; padding: 10px; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); z-index: 10; }
+        nav#navMenu ul { list-style: none; padding: 0; margin: 0; display: flex; gap: 15px; }
+        nav#navMenu li { display: inline; }
+        nav#navMenu a { text-decoration: none; color: #008f68; font-weight: bold; padding: 5px 10px; border-radius: 4px; transition: background 0.3s; }
+        nav#navMenu a:hover, nav#navMenu a.active { background-color: #00ff84; color: #fff; }
+        @media (max-width: 600px) { nav#navMenu { top: 10px; right: 10px; padding: 5px; } nav#navMenu ul { flex-direction: column; gap: 5px; } nav#navMenu a { padding: 3px 8px; font-size: 14px; } }
+    </style>
+</head>
+<body>
+    <div class="scrolling-text">Welcome! &nbsp; | &nbsp; नमस्ते! &nbsp; | &nbsp; अस्सलामु अलैकुम! &nbsp; | &nbsp; Sat Sri Akal! &nbsp; | &nbsp; Shalom! &nbsp; | &nbsp; Namaskāra! &nbsp; | &nbsp; Vanakkam!</div>
+    <nav id="navMenu">
+        <ul>
+            <li id="loginTab"><a href="login.html">Login</a></li>
+            <li id="registerTab"><a href="register.html">Register</a></li>
+        </ul>
+    </nav>
+    <h1>Old Books Marketplace</h1>
+    <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="sell.html">Sell Books</a></li>
+        <li><a href="buy.html">Buy Books</a></li>
+        <li><a href="about.html">About Us</a></li>
+        <li><a href="contact.html">Contact Us</a></li>
+    </ul>
+    <h1>Rediscover the Magic of Old Books</h1>
+    <div style="background:#f9f9f9; color:#000; padding:12px; font-size:16px; font-weight:500; line-height:1.6; border:1px solid #ccc;">
+        <div>
+            💬 We welcome your kind contributions — whether through your ideas, time, skills, or financial support. 
+            You can contribute starting from ₹1, ₹10, ₹50, ₹100, or more via UPI: <strong>mustakeemsiddiqui306@pingpay</strong>. 
+            Contact us at <a href="mailto:oldbooksmarketplace@gmail.com" style="color:blue; text-decoration:none;">oldbooksmarketplace@gmail.com</a>.  
+            We are currently developing our contributor's page where everyone will see contributor's image, name, and role of contribution! 🌟
+        </div>
+        <div>
+            💬 हम आपके किसी भी प्रकार के योगदान का स्वागत करते हैं — चाहे वह आपके विचारों, समय, कौशल या आर्थिक सहयोग के रूप में हो। 
+            आप ₹1, ₹10, ₹50, ₹100 या उससे अधिक UPI के जरिए योगदान कर सकते हैं: <strong>mustakeemsiddiqui306@pingpay</strong>. 
+            संपर्क करें: <a href="mailto:oldbooksmarketplace@gmail.com" style="color:blue; text-decoration:none;">oldbooksmarketplace@gmail.com</a>।  
+            हम वर्तमान में अपने योगदानकर्ता पृष्ठ को विकसित कर रहे हैं, जहाँ सभी योगदानकर्ताओं की फोटो, नाम और योगदान का प्रकार दिखेगा! 🌟
+        </div>
+    </div>
+    <a href="buy.html">Browse Our Collection</a><br>
+    <a href="b.ed.html">Online B.Ed. Resources</a>
+    <div id="fundraisingModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Support Us!</h2>
+            <p style="color: #000;">We're collecting funds to buy a domain. Your contribution helps us grow!</p>
+            <p style="color: #000;"><strong>Name:</strong> MOHD MUSTQEEM SIDDIQI</p>
+            <p><strong>UPI ID:</strong> <span class="copyable" onclick="navigator.clipboard.writeText('mustakeemsiddiqui306@pingpay'); alert('Copied!');">mustakeemsiddiqui306@pingpay</span></p>
+            <img src="images/qr.png" alt="UPI QR Code" class="qr-code">
+            <p style="color: #000;">Scan or use the UPI ID to contribute.</p>
+            <button onclick="closeModalForever()">Close and Don't Show Again</button>
+        </div>
+    </div>
+    <footer style="text-align: center; padding: 10px; background-color: black; color: white; margin-top: 20px;">
+        &copy; 2025 MOHD MUSTQEEM SIDDIQI. All rights reserved.
+    </footer>
+    <script>
+        const modal = document.getElementById("fundraisingModal");
+        const span = document.getElementsByClassName("close")[0];
+        const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+        const loginTab = document.getElementById('loginTab');
+        const registerTab = document.getElementById('registerTab');
+        if (isLoggedIn) {
+            loginTab.innerHTML = '<a href="dashboard.html">Dashboard</a>';
+            registerTab.innerHTML = '<a href="#" onclick="logout()">Logout</a>';
+        }
+        if (!localStorage.getItem('modalClosed')) {
+            modal.style.display = "block";
+        }
+        span.onclick = () => modal.style.display = "none";
+        window.onclick = (event) => { if (event.target == modal) modal.style.display = "none"; };
+        function closeModalForever() { localStorage.setItem('modalClosed', 'true'); modal.style.display = "none"; }
+        function logout() { localStorage.removeItem('isLoggedIn'); location.reload(); }
+    </script>
+</body>
+</html>

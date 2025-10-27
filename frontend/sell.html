@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Sell Your Book - Old Books Marketplace</title>
+    <link rel="stylesheet" href="css/sell.css">
+    <style>
+        nav#navMenu {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 255, 132, 0.1);
+            border-radius: 8px;
+            padding: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+        }
+        nav#navMenu ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            gap: 15px;
+        }
+        nav#navMenu li {
+            display: inline;
+        }
+        nav#navMenu a {
+            text-decoration: none;
+            color: #008f68;
+            font-weight: bold;
+            padding: 5px 10px;
+            border-radius: 4px;
+            transition: background 0.3s;
+        }
+        nav#navMenu a:hover {
+            background-color: #00ff84;
+            color: #fff;
+        }
+        @media (max-width: 600px) {
+            nav#navMenu {
+                top: 10px;
+                right: 10px;
+                padding: 5px;
+            }
+            nav#navMenu ul {
+                flex-direction: column;
+                gap: 5px;
+            }
+            nav#navMenu a {
+                padding: 3px 8px;
+                font-size: 14px;
+            }
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 10px;
+        }
+        .progress {
+            width: 100%;
+            background: #f3f3f3;
+            border-radius: 5px;
+            overflow: hidden;
+            height: 10px;
+            display: none;
+        }
+        .progress-bar {
+            height: 100%;
+            background: #00ff84;
+            width: 0%;
+        }
+    </style>
+</head>
+<body>
+    <nav id="navMenu">
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="buy.html">Buy Books</a></li>
+            <li id="loginTab"><a href="login.html">Login</a></li>
+            <li id="registerTab"><a href="register.html">Register</a></li>
+        </ul>
+    </nav>
+    <header>
+        <h1>Sell Your Book</h1>
+    </header>
+    <main>
+        <h2>Enter Book Details</h2>
+        <form id="sellBookForm" novalidate>
+            <label for="title">Book Title</label>
+            <input type="text" id="title" name="title" placeholder="Enter book title" required autofocus><br>
+            <label for="condition">Condition of Book</label>
+            <select id="condition" name="condition" required>
+                <option value="">Select Condition</option>
+                <option value="Like New">Like New</option>
+                <option value="Good">Good</option>
+                <option value="Fair">Fair</option>
+                <option value="Poor">Poor</option>
+            </select><br>
+            <label for="type">Type of Book</label>
+            <select id="type" name="type" required>
+                <option value="">Select Type</option>
+                <option value="Academic/Text-Book">Academic/Text-Book</option>
+                <option value="For Graduation/Post-Graduation">For Graduation/Post-Graduation</option>
+                <option value="Competitive Exams">Competitive Exams</option>
+                <option value="Children">Children</option>
+                <option value="Entrance Test Based">Entrance Test Based</option>
+                <option value="All NCERT Types">All NCERT Types</option>
+                <option value="Science & Technology">Science & Technology</option>
+                <option value="Biography">Biography</option>
+                <option value="Others">Others</option>
+            </select><br>
+            <input type="text" id="otherType" name="otherType" placeholder="Specify other type" style="display:none;" required><br>
+            <label for="language">Language of Book</label>
+            <select id="language" name="language" required>
+                <option value="">Select Language</option>
+                <option value="Hindi">Hindi</option>
+                <option value="English">English</option>
+                <option value="Urdu">Urdu</option>
+                <option value="Sanskrit">Sanskrit</option>
+                <option value="Other">Other</option>
+            </select><br>
+            <input type="text" id="otherLanguage" name="otherLanguage" placeholder="Specify other language" style="display:none;" required><br>
+            <label for="author">Author/Publisher/Class</label>
+            <input type="text" id="author" name="author" placeholder="Enter author/publisher/class" required><br>
+            <label for="originalPrice">Original Price (Rs)</label>
+            <input type="number" id="originalPrice" name="originalPrice" min="1" step="0.01" placeholder="Enter original price" required><br>
+            <label for="sellingPrice">Selling Price (Rs)</label>
+            <input type="number" id="sellingPrice" name="sellingPrice" min="1" step="0.01" placeholder="Enter selling price" required><br>
+            <label for="quantity">Book Quantity</label>
+            <select id="quantity" name="quantity" required>
+                <option value="">Select Quantity</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+                <option value="7">7</option>
+                <option value="8">8</option>
+                <option value="9">9</option>
+                <option value="10">10</option>
+                <option value="More">More</option>
+            </select><br>
+            <label for="negotiable">Is Negotiable?</label>
+            <input type="radio" id="negotiableYes" name="negotiable" value="Yes" required> Yes
+            <input type="radio" id="negotiableNo" name="negotiable" value="No" required> No<br>
+            <label for="name">Your Name</label>
+            <input type="text" id="name" name="name" placeholder="Enter your name" required><br>
+            <label for="phone">Phone Number</label>
+            <input type="tel" id="phone" name="phone" placeholder="Enter phone number" pattern="^\+?[0-9\s\-]{7,15}$" title="7-15 digits" required><br>
+            <label for="city">City/Location</label>
+            <input type="text" id="city" name="city" placeholder="Enter your city" required><br>
+            <label for="delivery">Delivery Method</label>
+            <select id="delivery" name="delivery" required>
+                <option value="">Select Method</option>
+                <option value="Meet in Person">Meet in Person</option>
+                <option value="Courier/Post">Courier/Post</option>
+                <option value="Both">Both</option>
+            </select><br>
+            <label for="image">Upload Image</label>
+            <input type="file" id="image" name="image" accept="image/*"><br>
+            <div id="imagePreview" style="display:none;"><img id="previewImg" src="" alt="Preview" style="max-width: 200px;"></div>
+            <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
+            <button type="submit">Submit</button>
+            <div class="loading" id="loading">Submitting...</div>
+            <button type="reset">Reset</button>
+        </form>
+    </main>
+    <footer style="text-align: center; padding: 10px; background-color: black; color: white; margin-top: 20px;">
+        &copy; 2025 MOHD MUSTQEEM SIDDIQI. All rights reserved.
+    </footer>
+    <script>
+        // Handle login state
+        const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+        const loginTab = document.getElementById('loginTab');
+        const registerTab = document.getElementById('registerTab');
+        if (isLoggedIn) {
+            loginTab.innerHTML = '<a href="dashboard.html">Dashboard</a>';
+            registerTab.innerHTML = '<a href="#" onclick="logout()">Logout</a>';
+        }
+        function logout() {
+            localStorage.removeItem('isLoggedIn');
+            location.reload();
+        }
+
+        // Toggle "Other" fields
+        function toggleOtherInput(selectId, inputId, otherValue) {
+            const select = document.getElementById(selectId);
+            const input = document.getElementById(inputId);
+            select.addEventListener('change', function() {
+                if (this.value === otherValue) {
+                    input.style.display = 'block';
+                    input.required = true;
+                } else {
+                    input.style.display = 'none';
+                    input.required = false;
+                    input.value = '';
+                }
+            });
+        }
+        toggleOtherInput('type', 'otherType', 'Others');
+        toggleOtherInput('language', 'otherLanguage', 'Other');
+
+        // Image preview
+        document.getElementById('image').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            const preview = document.getElementById('imagePreview');
+            const previewImg = document.getElementById('previewImg');
+            if (file && file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    previewImg.src = e.target.result;
+                    preview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            } else {
+                preview.style.display = 'none';
+                previewImg.src = '';
+                if (file) alert('Please select a valid image file.');
+            }
+        });
+
+        // Form submission
+        const sellForm = document.getElementById('sellBookForm');
+        const loading = document.getElementById('loading');
+        const progressBar = document.getElementById('progressBar');
+        const progress = document.querySelector('.progress');
+
+        sellForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const title = document.getElementById('title').value.trim();
+            const condition = document.getElementById('condition').value;
+            const typeSelect = document.getElementById('type').value;
+            const type = typeSelect === 'Others' ? document.getElementById('otherType').value.trim() : typeSelect;
+            const languageSelect = document.getElementById('language').value;
+            const language = languageSelect === 'Other' ? document.getElementById('otherLanguage').value.trim() : languageSelect;
+            const author = document.getElementById('author').value.trim();
+            const originalPrice = parseFloat(document.getElementById('originalPrice').value);
+            const sellingPrice = parseFloat(document.getElementById('sellingPrice').value);
+            const quantity = document.getElementById('quantity').value;
+            const negotiable = document.querySelector('input[name="negotiable"]:checked')?.value || '';
+            const name = document.getElementById('name').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+            const city = document.getElementById('city').value.trim();
+            const delivery = document.getElementById('delivery').value;
+            const imageFile = document.getElementById('image').files[0];
+
+            // Validation
+            if (!title || !condition || !type || !language || !author || isNaN(originalPrice) || originalPrice <= 0 || isNaN(sellingPrice) || sellingPrice <= 0 || !quantity || !negotiable || !name || !phone || !city || !delivery) {
+                alert('Please fill all required fields.');
+                return;
+            }
+            if (sellingPrice > originalPrice) {
+                alert('Selling price cannot be higher than original price.');
+                return;
+            }
+            const phonePattern = /^\+?[0-9\s\-]{7,15}$/;
+            if (!phonePattern.test(phone)) {
+                alert('Please enter a valid phone number.');
+                return;
+            }
+            if (imageFile && (!imageFile.type.startsWith('image/') || imageFile.size > 5 * 1024 * 1024)) {
+                alert('Please select a valid image file under 5MB.');
+                return;
+            }
+
+            // Prepare FormData
+            const formData = new FormData();
+            formData.append('title', title);
+            formData.append('condition', condition);
+            formData.append('type', type);
+            formData.append('language', language);
+            formData.append('author', author);
+            formData.append('originalPrice', originalPrice);
+            formData.append('sellingPrice', sellingPrice);
+            formData.append('quantity', quantity);
+            formData.append('negotiable', negotiable);
+            formData.append('name', name);
+            formData.append('phone', phone);
+            formData.append('city', city);
+            formData.append('delivery', delivery);
+            if (imageFile) formData.append('image', imageFile);
+
+            loading.style.display = 'block';
+            progress.style.display = 'block';
+
+            try {
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', 'https://book-seller-backend-b84y.onrender.com/api/books');
+                xhr.upload.addEventListener('progress', (e) => {
+                    if (e.lengthComputable) {
+                        const percent = (e.loaded / e.total) * 100;
+                        progressBar.style.width = percent + '%';
+                    }
+                });
+                xhr.onload = async () => {
+                    if (xhr.status === 200) {
+                        await saveToGoogleSheets(title, condition, type, language, author, originalPrice, sellingPrice, quantity, negotiable, name, phone, city, delivery);
+                        alert('Book listed successfully!');
+                        sellForm.reset();
+                        document.getElementById('imagePreview').style.display = 'none';
+                        document.getElementById('previewImg').src = '';
+                    } else {
+                        alert('Error: ' + JSON.parse(xhr.responseText).error);
+                    }
+                };
+                xhr.onerror = () => alert('Connection problem. Is the server running?');
+                xhr.send(formData);
+            } catch (error) {
+                console.error(error);
+                alert('Submission failed.');
+            } finally {
+                loading.style.display = 'none';
+                progress.style.display = 'none';
+                progressBar.style.width = '0%';
+            }
+        });
+
+        // Save to Google Sheets
+        async function saveToGoogleSheets(title, condition, type, language, author, originalPrice, sellingPrice, quantity, negotiable, name, phone, city, delivery) {
+            const sheetsUrl = 'https://script.google.com/macros/s/AKfycbyEYGW0Q39ksSlYXhuE_sC3ctFkOpCR8Hc-Wp_pdBhFLoEoLLVS50Zyl4QiFODLGZXB/exec';
+            const formData = new URLSearchParams({
+                timestamp: new Date().toLocaleString('en-IN'),
+                title, condition, type, language, author, originalPrice, sellingPrice, quantity, negotiable, name, phone, city, delivery,
+                typeLabel: 'Sell'
+            });
+            try {
+                await fetch(sheetsUrl, { method: 'POST', body: formData });
+            } catch (error) {
+                console.log('Sheets error (non-blocking):', error);
+            }
+        }
+    </script>
+</body>
+</html>
